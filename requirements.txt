@@ -6,3 +6,4 @@ itsdangerous
 jsonify
 MarkupSafe
 Werkzeug
+black

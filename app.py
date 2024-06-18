@@ -6,17 +6,20 @@ from flask import (
     jsonify,
     json,
 )
-import os, random
+import os, random, fnmatch
 
 app = Flask(__name__)
 
 # Replace with your actual image directory path
-IMAGE_DIR = os.getenv("IMAGE_DIR", 'test-images')
+IMAGE_DIR = os.getenv("IMAGE_DIR", "test-images")
 
 # In-memory store for image click counts and Elo ratings
 # Initialize all images with a rating of 1200
+# Only incude files elding in *.png
 image_data = {
-    image: {"clicks": 0, "elo": 1200} for image in os.listdir(IMAGE_DIR)
+    image: {"clicks": 0, "elo": 1200}
+    for image in os.listdir(IMAGE_DIR)
+    if fnmatch.fnmatch(image, "*.png")
 }
 
 # Load Elo ratings from a json file if it exists
@@ -32,10 +35,19 @@ if os.path.exists(elo_file):
             for image, data in sorted_image_data
         }
 
+
 @app.route("/")
 def index():
     image_files = list(image_data.keys())
-    images = random.sample(image_files, 2)
+    # Create a list of weights based on the Elo ratings
+    weights = [image_data[image]["elo"] for image in image_files]
+    # Use the weights when picking two images
+    images = random.choices(image_files, weights=weights, k=2)
+    
+    # Check if the same image was picked twice
+    while images[0] == images[1]:
+        images = random.choices(image_files, weights=weights, k=2)
+    
     print(images)
     return render_template("index.html", images=images)
 
