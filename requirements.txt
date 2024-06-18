@@ -1,0 +1,8 @@
+blinker
+click
+flash
+Flask
+itsdangerous
+jsonify
+MarkupSafe
+Werkzeug
