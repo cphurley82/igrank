@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .image-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .image-container > div {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        @media (orientation: landscape) {
+            .image-container {
+                flex-direction: row;
+                width: 100vw;
+            }
+        }
+    </style>
+    <script>
+window.onload = function() {
+    var images = document.querySelectorAll('.image-container img');
+    images.forEach(function(image, index) {
+        // Attach the image name to the img element
+        image.dataset.name = image.src.split('/').pop();
+
+        image.addEventListener('click', function() {
+            // Get the other image
+            var otherImage = images[(index + 1) % 2];
+
+            fetch('/record_click', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // Include both the winner and loser in the request body
+                body: JSON.stringify({ winner: image.dataset.name, loser: otherImage.dataset.name }),
+            })
+            .then(function() {
+                location.reload();
+            });
+        });
+    });
+};
+    </script>
+</head>
+<body>
+    <div class="image-container">
+        {% for image in images %}
+            <div>
+                <img src="{{ url_for('send_image', filename=image) }}" alt="Image">
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
